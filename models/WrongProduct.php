@@ -25,7 +25,7 @@ class WrongProduct extends ActiveRecord
     public function rules()
     {
         return [
-//            [['title'], 'required']
+            [['store_id'], 'required']
         ];
     }
 

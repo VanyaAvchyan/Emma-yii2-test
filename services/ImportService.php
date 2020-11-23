@@ -19,9 +19,10 @@ class ImportService
             $ext = $file->getExtension();
             $importer = $this->fileFactory($ext);
             $results = $importer->getAsArray($file);
-            $importer->saveSuccessProduct($store_id, $results['success_results']);
-            $importer->saveWrongProduct($store_id, $results['wrong_results']);
-            return true;
+            if(!empty($results['success_results'])) {
+                return $importer->saveSuccessProduct($store_id, $results['success_results']);
+            }
+            return $importer->saveWrongProduct($store_id, $results['wrong_results']);
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }

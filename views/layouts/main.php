@@ -74,7 +74,7 @@ AppAsset::register($this);
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     },
                     queuecomplete : function(a, b) {
-                        //window.location.href = "<?//=\yii\helpers\Url::base(true)?>//";
+                        window.location.href = "<?=\yii\helpers\Url::base(true)?>";
                     },
                     complete: function(file) {
                         if (file.size > 5*1024*1024) {

@@ -25,12 +25,7 @@ class StoreProduct extends ActiveRecord
     public function rules()
     {
         return [
-//            [['title'], 'required']
+            [['store_id', 'upc', 'title', 'price'], 'required']
         ];
-    }
-
-    public function getStore()
-    {
-        return $this->hasOne(Store::className(), ['id' => 'store_id']);
     }
 }

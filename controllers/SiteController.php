@@ -11,11 +11,10 @@ use yii\web\UploadedFile;
 class SiteController extends Controller
 {
 
-    public function actionIndex(ProductService $productService)
+    public function actionIndex(StoreService $service)
     {
         return $this->render('index', [
-            'products' => $productService->getAll(['store']),
-            'wrong_products' => $productService->getAllWrongs(['store']),
+            'stores' => $service->getAll(['store'])
         ]);
     }
 

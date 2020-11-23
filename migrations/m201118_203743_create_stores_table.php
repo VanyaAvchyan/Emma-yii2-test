@@ -14,7 +14,9 @@ class m201118_203743_create_stores_table extends Migration
     {
         $this->createTable('stores', [
             'id' => $this->primaryKey()->unsigned(),
-            'title' => $this->string()->notNull()
+            'title' => $this->string()->notNull()->unique(),
+            'created_at' => $this->timestamp()->defaultExpression('NOW()'),
+            'updated_at' => $this->timestamp()->defaultExpression('CURRENT_TIMESTAMP')->append('ON UPDATE NOW()')
         ]);
     }
 

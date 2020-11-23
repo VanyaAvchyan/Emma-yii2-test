@@ -33,9 +33,14 @@ class Store extends ActiveRecord
         ];
     }
 
-    public function getProducts()
+    public function getSuccess_products_count()
     {
-        return $this->hasMany(StoreProduct::className(), ['store_id' => 'id']);
+        return $this->hasMany(StoreProduct::className(), ['store_id' => 'id'])->count();
+    }
+
+    public function getWrong_products_count()
+    {
+        return $this->hasMany(WrongProduct::className(), ['store_id' => 'id'])->count();
     }
 
     public function attributeLabels()
@@ -43,10 +48,5 @@ class Store extends ActiveRecord
         return [
             'title' => 'Store title'
         ];
-    }
-
-    public function setTitle($value)
-    {
-        $this->title = $value;
     }
 }

@@ -1,63 +1,32 @@
 <?php
 namespace app\services\filefactory;
 
+use phpDocumentor\Reflection\Types\False_;
+
 class CSVImporter extends AImportFileFactory {
     /**
      * @param \yii\web\UploadedFile $file
      * @return array
      */
     public function getAsArray(\yii\web\UploadedFile $file) {
-        $handle = fopen($file->tempName, 'r');
-        $success_results = [];
-        $wrong_results = [];
-        if ($handle) {
-            $cnt = 0;
-            while( ($line = fgetcsv($handle, 1000, ",")) != FALSE) {
-                $upc = '';
-                $title = '';
-                $price = '';
-                foreach($line as $k => $value) {
-                    if(is_numeric($value))
-                        $num = $value*1;
-                    else {
-                        if($value) {
-                            $title = $value;
-                            continue;
-                        }
-                    }
-                    if($num)
-                    {
-                        if(is_float($num))
-                            $price = $value;
-                    else
-                        $upc = $value;
-                    }
-                }
-                if(!$upc)
-                {
-                    if($title && $price) {
-                        $wrong_results[$cnt]['title'] = $title;
-                        $wrong_results[$cnt]['price'] = $price;
-                    }
-                } else {
-                    if(!($title && $price)){
-                        $wrong_results[$cnt]['upc']   = $upc;
-                        $wrong_results[$cnt]['title'] = $title;
-                        $wrong_results[$cnt]['price'] = $price;
-                        continue;
-                    }
-                    $success_results[$cnt]['upc']   = $upc;
-                    $success_results[$cnt]['title'] = $title;
-                    $success_results[$cnt]['price'] = $price;
-                }
-                $cnt++;
+        try {
+            $key = 'success_results';
+            $results = [];
+            $csvlines = array_map('str_getcsv', file($file->tempName));
+            if(!$csvlines)
+                throw new \Exception('File is empty!');
+            $headers = array_shift($csvlines);
+            if(array_search('upc', $headers) === false)
+                $key = 'wrong_results';
+            foreach ($csvlines as $line) {
+                $results[] = array_combine($headers, $line);
             }
+            return [
+                $key => $results
+            ];
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
         }
-        fclose($handle);
-        return [
-            'success_results' => $success_results,
-            'wrong_results' => $wrong_results
-        ];
     }
 
     /**
@@ -72,6 +41,10 @@ class CSVImporter extends AImportFileFactory {
         try {
             $sql = 'insert into store_products (store_id, upc, title, price) values';
             foreach ($datas as $data) {
+                if(empty($data['title']))
+                    $data['title'] = '';
+                if(empty($data['price']))
+                    $data['price'] = '';
                 $sql.="({$store_id}, '{$data['upc']}', '{$data['title']}', '{$data['price']}'),";
             }
             $sql = rtrim($sql,',');
@@ -96,15 +69,13 @@ class CSVImporter extends AImportFileFactory {
         $connection = \Yii::$app->db;
         $transaction=$connection->beginTransaction();
         try {
-            $sql = 'insert into wrong_products (store_id, upc,title,price) values';
+            $sql = 'insert into wrong_products (store_id, title, price) values';
             foreach ($datas as $data) {
-                if(empty($data['upc']))
-                    $data['upc'] = '';
                 if(empty($data['title']))
                     $data['title'] = '';
                 if(empty($data['price']))
                     $data['price'] = '';
-                $sql.="({$store_id}, '{$data['upc']}', '{$data['title']}', '{$data['price']}'),";
+                $sql.="({$store_id}, '{$data['title']}', '{$data['price']}'),";
             }
             $sql = rtrim($sql,',');
             $sql.=" ON DUPLICATE KEY UPDATE title=VALUES(title), price=VALUES(price)";
